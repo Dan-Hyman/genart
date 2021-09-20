@@ -4,10 +4,12 @@ import scipy.io
 import scipy.misc
 import matplotlib.pyplot as plt
 from PIL import Image
-from utils import *
+from updated_utils import *
 import imageio
 import numpy as np
 import tensorflow as tf
+
+tf.compat.v1.disable_eager_execution() 
 
 get_ipython().run_line_magic('matplotlib', 'inline')
 
@@ -16,29 +18,29 @@ model = load_vgg_model("model/vgg19.mat")
 def content_cost(C,G):
     m,h,w,c = G.get_shape().as_list()
 
-    C_unrolled = tf.transpose(C)
+    C_unrolled = tf.transpose(a=C)
     G_unrolled = tf.reshape(G, [h*w*c])
 
-    content = (1/(4*h*w*c))*tf.reduce_sum(tf.square(tf.subtract(C,G)))
+    content = (1/(4*h*w*c))*tf.reduce_sum(input_tensor=tf.square(tf.subtract(C,G)))
 
     return content
 
-tf.reset_default_graph()
+tf.compat.v1.reset_default_graph()
 
-with tf.Session() as sess:
-    C = tf.random_normal([1,4,4,3], mean = 1, stddev = 4)
-    G =  tf.random_normal([1,4,4,3], mean = 1, stddev = 4)
+with tf.compat.v1.Session() as sess:
+    C = tf.random.normal([1,4,4,3], mean = 1, stddev = 4)
+    G =  tf.random.normal([1,4,4,3], mean = 1, stddev = 4)
     content = content_cost(C,G)
     print("content = " + str(content.eval()))
 
 def gram_matrix(M):
-    Gm = tf.matmul(M, tf.transpose(M))
+    Gm = tf.matmul(M, tf.transpose(a=M))
     return Gm
 
-tf.reset_default_graph()
+tf.compat.v1.reset_default_graph()
 
-with tf.Session() as sess:
-    M = tf.random_normal([3,2], mean=1, stddev = 4)
+with tf.compat.v1.Session() as sess:
+    M = tf.random.normal([3,2], mean=1, stddev = 4)
     Gm = gram_matrix(M)
     print("GM = " + str(Gm.eval()))
 
@@ -46,17 +48,17 @@ def layer_style_cost(S,G):
     m,h,w,c = G.get_shape().as_list()
     S = tf.reshape(S, shape=(h*w,c))
     G = tf.reshape(G, shape=(h*w,c))
-    Gs = gram_matrix(tf.transpose(S))
-    Gg = gram_matrix(tf.transpose(G))
+    Gs = gram_matrix(tf.transpose(a=S))
+    Gg = gram_matrix(tf.transpose(a=G))
 
-    style_layer = (1/(4*c*c*(w*h)**2))*tf.reduce_sum(tf.square(tf.subtract(Gs,Gg)))
+    style_layer = (1/(4*c*c*(w*h)**2))*tf.reduce_sum(input_tensor=tf.square(tf.subtract(Gs,Gg)))
     return style_layer
 
-tf.reset_default_graph()
+tf.compat.v1.reset_default_graph()
 
-with tf.Session() as sess:
-    S = tf.random_normal([1,4,4,3], mean = 1, stddev = 4)
-    G =  tf.random_normal([1,4,4,3], mean = 1, stddev = 4)
+with tf.compat.v1.Session() as sess:
+    S = tf.random.normal([1,4,4,3], mean = 1, stddev = 4)
+    G =  tf.random.normal([1,4,4,3], mean = 1, stddev = 4)
     layer_style = layer_style_cost(S,G)
 
     print("later_style = " + str(layer_style.eval()))
@@ -83,22 +85,22 @@ def total_cost(j_content, j_style, alpha=10, beta=40):
     j = alpha*j_content*beta*j_style
     return j
 
-tf.reset_default_graph()
+tf.compat.v1.reset_default_graph()
 
-with tf.Session() as sess:
+with tf.compat.v1.Session() as sess:
     j_content = np.random.randn()
     j_style = np.random.randn()
     j = total_cost(j_content, j_style)
     print("j = " + str(j))
 
-tf.reset_default_graph()
+tf.compat.v1.reset_default_graph()
 
-sess = tf.InteractiveSession()
+sess = tf.compat.v1.InteractiveSession()
 
-content_image = scipy.misc.imread("images/1.jpg")
+content_image = imageio.imread("images/gendeer500.jpg")
 content_image = reshape_and_normalize_image(content_image)
 
-style_image = scipy.misc.imread("images/2.jpg")
+style_image = imageio.imread("images/impressionist500x500.jpg")
 style_image = reshape_and_normalize_image(style_image)
 
 generated_image = generate_noise_image(content_image)
@@ -116,12 +118,12 @@ j_style = style_cost(model, style_layers)
 
 j = total_cost(alpha=10, beta=40, j_content=j_content, j_style=j_style)
 
-optimizer = tf.train.AdamOptimizer(2.0)
+optimizer = tf.compat.v1.train.AdamOptimizer(2.0)
 train_step = optimizer.minimize(j)
 
 
 def nn(sess, input_image, iter=200):
-    sess.run(tf.global_variables_initializer())
+    sess.run(tf.compat.v1.global_variables_initializer())
     generated_image = sess.run(model["input"].assign(input_image))
     for i in range(iter):
         sess.run(train_step)

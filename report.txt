@@ -1,0 +1,20 @@
+TensorFlow 2.0 Upgrade Script
+-----------------------------
+Converted 1 files
+Detected 0 issues that require attention
+--------------------------------------------------------------------------------
+================================================================================
+Detailed log follows:
+
+================================================================================
+--------------------------------------------------------------------------------
+Processing file 'utils.py'
+ outputting to 'updated_utils.py'
+--------------------------------------------------------------------------------
+
+110:15: INFO: Added keywords to args of function 'tf.nn.conv2d'
+123:15: INFO: Added keywords to args of function 'tf.nn.avg_pool'
+123:15: INFO: Renamed keyword argument for tf.nn.avg_pool from value to input
+123:15: INFO: Renamed 'tf.nn.avg_pool' to 'tf.nn.avg_pool2d'
+--------------------------------------------------------------------------------
+
